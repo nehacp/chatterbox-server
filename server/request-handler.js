@@ -33,6 +33,8 @@ var requestHandler = function(request, response) {
   var statusCode = 200;
   const { method, url } = request; //Get request info
 
+  //TODO: if method===POST, GET, etc.
+
   let body = []; // Get request body for POST or PUT requests
   request.on('data', (chunk) => {
     body.push(chunk);
