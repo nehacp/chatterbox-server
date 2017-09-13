@@ -7,8 +7,6 @@
 
     <!-- dependencies -->
     <script src="bower_components/jquery/dist/jquery.js"></script>
-    <script src="bower_components/underscore/underscore.js"></script>
-    <script src="scripts/app.js"></script>
     <script>
       // YOU DO NOT NEED TO EDIT THIS CODE
       if (!/(&|\?)username=/.test(window.location.search)) {
@@ -18,24 +16,32 @@
         }
         newSearch += 'username=' + (prompt('What is your name?') || 'anonymous');
         window.location.search = newSearch;
-        app.init();
       }
     </script>
-    <script src="env/config.js"></script>
+    <!-- your scripts -->
+    <!-- <script src="env/config.js"></script> -->
+    <script src="scripts/app.js"></script>
   </head>
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-    </div>
-    <select id="roomSelect">
-    </select>
+      <!-- Your HTML goes here! -->
 
-    <div id="message-container">
-        <textarea id="message" rows="2" placeholder="Write a chat!"></textarea>
-        <button id="newRoom" type="button">Create New Room And Send</button>
-        <button id="send" type="button">Send</button>
-        <!-- <button id="refresh" type="button">Fetch New Messages</button> -->
-    </div>
+      <div class="spinner"><img src="images/spiffygif_46x46.gif"></div>
+      <div id="rooms">
+        Room:
+        <select id="roomSelect">
+        </select>
+      </div>
+      <form action="#" id="send" method="post">
+        <input type="text" name="message" id="message"/>
+        <input type="submit" name="submit" class="submit"/>
+      </form>    </div>
     <div id="chats"></div>
-  </body>
+
+    <script>
+      $(function(){
+        app.init()
+      });
+    </script>  </body>
 </html>

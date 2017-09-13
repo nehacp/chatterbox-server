@@ -16,7 +16,8 @@ var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
+  'access-control-max-age': 10, // Seconds.
+
 };
 
 const results = require('./messages');
@@ -29,13 +30,29 @@ var requestHandler = function(request, response) {
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = 'application/json';
 
-  if (url !== "/classes/messages") {
+  if (!url.startsWith("/classes/messages")) {
+    console.log('WRONG URL', url);
     statusCode = 404;
     response.writeHead(statusCode, headers);
     response.end();
   }
 
-  if (method === 'GET') {
+  // if (req.method === 'OPTIONS') {
+  //       console.log('!OPTIONS');
+  //       var headers = {};
+  //       // IE8 does not allow domains to be specified, just the *
+  //       // headers["Access-Control-Allow-Origin"] = req.headers.origin;
+  //       headers["Access-Control-Allow-Origin"] = "*";
+  //       headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";
+  //       headers["Access-Control-Allow-Credentials"] = false;
+  //       headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+  //       headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept";
+  //       res.writeHead(200, headers);
+  //       res.end();
+  // }
+
+
+  if (method === 'GET' || method === "OPTIONS") {
     response.writeHead(statusCode, headers);
     const responseBody = { headers, method, url, results };
     response.end(JSON.stringify(responseBody));
