@@ -52,23 +52,30 @@ var requestHandler = function(request, response) {
   //TODO: if method===POST, GET, etc.
 
   if (method === 'GET') {
-    response.end();
+    response.writeHead(statusCode, headers);
+    const responseBody = { headers, method, url };
+    response.write(JSON.stringify(responseBody));
 
+    response.end();
   } else if (method === 'POST') {
     let body = [];
-
     request.on('data', (chunk) => {
       body.push(chunk);
+    }).on('error', (err) => {
+      // This prints the error message and stack trace to `stderr`.
+      console.error(err.stack);
+      response.end('Error 404');
     }).on('end', () => {
-
       body = Buffer.concat(body).toString();
-      request.on('error', (err) => {
-        // This prints the error message and stack trace to `stderr`.
-        console.error(err.stack);
-        response.end('Error ' + statusCode);
-      });
+      messageArr.push(body);
+      statusCode = 201;
+      response.writeHead(statusCode, headers);
+      const responseBody = { headers, method, url, body };
+      response.write(JSON.stringify(responseBody));
       response.end();
     });
+
+  } else {
 
   }
 
