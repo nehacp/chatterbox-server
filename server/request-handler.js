@@ -19,8 +19,10 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+const results = require('./messages');
+
 var requestHandler = function(request, response) {
-  const messageArr = require('./messages');
+
 
   // Request and Response come from node's http module.
   //
@@ -53,9 +55,8 @@ var requestHandler = function(request, response) {
 
   if (method === 'GET') {
     response.writeHead(statusCode, headers);
-    const responseBody = { headers, method, url };
+    const responseBody = { headers, method, url, results };
     response.write(JSON.stringify(responseBody));
-
     response.end();
   } else if (method === 'POST') {
     let body = [];
@@ -67,7 +68,7 @@ var requestHandler = function(request, response) {
       response.end('Error 404');
     }).on('end', () => {
       body = Buffer.concat(body).toString();
-      messageArr.push(body);
+      results.push(JSON.parse(body));
       statusCode = 201;
       response.writeHead(statusCode, headers);
       const responseBody = { headers, method, url, body };
