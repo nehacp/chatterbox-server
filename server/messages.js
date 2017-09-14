@@ -1,6 +1,3 @@
-const messages = [{
-  username: 'Jono',
-  text: 'Do my bidding!'
-}];
+const messages = [];
 
 module.exports = messages;

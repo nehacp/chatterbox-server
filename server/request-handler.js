@@ -41,6 +41,7 @@ var requestHandler = function(request, response) {
     response.writeHead(statusCode, headers);
     const responseBody = { headers, method, url, results };
     response.end(JSON.stringify(responseBody));
+
   } else if (method === 'POST') {
     let body = [];
 
@@ -61,7 +62,7 @@ var requestHandler = function(request, response) {
       results.push(resultObj);
       statusCode = 201;
       response.writeHead(statusCode, headers);
-      const responseBody = { headers, method, url, body };
+      const responseBody = { headers, method, url, resultObj };
       response.end(JSON.stringify(responseBody));
     });
 

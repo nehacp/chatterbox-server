@@ -30,9 +30,9 @@ var app = {
     app.fetch(false);
 
     // Poll for new messages
-    // setInterval(function() {
-    //   app.fetch(true);
-    // }, 3000);
+    setInterval(function() {
+      app.fetch(true);
+    }, 3000);
   },
 
   send: function(message) {
@@ -65,7 +65,10 @@ var app = {
       success: function(data) {
 
         // Don't bother if we have nothing to work with
-        if (!data.results || !data.results.length) { return; }
+        if (!data.results || !data.results.length) {
+          app.stopSpinner();
+          return;
+        }
 
         // Store messages for caching later
         app.messages = data.results;
