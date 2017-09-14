@@ -70,7 +70,7 @@ describe('Node Server Request Listener Function', function() {
     expect(res._responseCode).to.equal(201);
 
     const parsed = JSON.parse(res._data);
-    const body = JSON.parse(parsed.body[0]);
+    const body = parsed.body;
     expect(body.text).to.equal('Do my bidding!');
     expect(res._ended).to.equal(true);
   });

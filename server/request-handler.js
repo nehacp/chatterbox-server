@@ -21,10 +21,11 @@ var defaultCorsHeaders = {
 };
 
 const results = require('./messages');
+const urlMethods = require('url');
 
 var requestHandler = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  let statusCode = 200;
+  // let statusCode = 200;
 
   const { method, url } = request; //Get request info
   var headers = defaultCorsHeaders;
@@ -32,21 +33,23 @@ var requestHandler = function(request, response) {
 
   if (!url.startsWith("/classes/messages")) {
     console.log('WRONG URL', url);
-    statusCode = 404;
-    response.writeHead(statusCode, headers);
+    // statusCode = 404;
+    response.writeHead(404, headers);
     response.end();
   }
 
+  const queryArray = urlMethods.parse(url, true);
+
   if (method === 'GET' || method === "OPTIONS") {
-    const queryArray = url.match(/\?(.+)=(.+)/);
-    response.writeHead(statusCode, headers);
+    // const queryArray = url.match(/\?(.+)=(.+)/);
+    response.writeHead(200, headers);
     let responseBody;
-    if (queryArray && queryArray[1] === 'order' && queryArray[2] === '-createdAt') {
+    if (queryArray.query['order'] && queryArray.query['order'] === '-createdAt') {
       const reverseResults = results.slice().reverse();
-      responseBody = { headers, method, url };
+      responseBody = { method, url };
       responseBody.results = reverseResults;
     } else {
-      responseBody = { headers, method, url, results };
+      responseBody = { method, url, results };
     }
     response.end(JSON.stringify(responseBody));
   } else if (method === 'POST') {
@@ -65,30 +68,39 @@ var requestHandler = function(request, response) {
     request.on('end', () => {
       const resultObj = JSON.parse(body.toString());
       resultObj.createdAt = new Date();
-      resultObj.objectId = results.length + 1;
+      resultObj.objectId = results.length ? results[results.length - 1].objectId + 1 : 1;
       results.push(resultObj);
-      statusCode = 201;
-      response.writeHead(statusCode, headers);
-      const responseBody = { headers, method, url, body };
+      // statusCode = 201;
+      response.writeHead(201, headers);
+      const responseBody = { method, url };
+      responseBody.body = resultObj;
       response.end(JSON.stringify(responseBody));
     });
   } else if (method === 'DELETE') { //NOTE: To delete, pass in object id url?objectId=[num]
-    const queryArray = url.match(/\?(.+)=(.+)/);
-    if (queryArray && queryArray[1] === 'objectId' && queryArray[2] <= results.length) {
-      console.log('before delete', results);
-      const deleted = results.splice(queryArray[2] - 1, 1);
-      response.writeHead(200, headers);
-      const responseBody = { headers, method, url };
-      responseBody.body = deleted;
-      console.log('after delete', results);
-      response.end(JSON.stringify(responseBody));
+    let deletedMessage;
+    let isFound = false;
+    if (queryArray.query['objectId']) {
+      const targetId = Number(queryArray.query['objectId']);
+      for (let i = 0; i < results.length; i++) {
+        if (results[i].objectId === targetId) {
+          deletedMessage = results.splice(i, 1);
+          isFound = true;
+        }
+      }
+      if (isFound) {
+        response.writeHead(201, headers);
+        const responseBody = { method, url };
+        responseBody.body = deletedMessage;
+        response.end(JSON.stringify(responseBody));
+      } else {
+        response.writeHead(400, headers);
+        response.end();
+      }
     } else {
-      statusCode = 400;
-      response.writeHead(statusCode, headers);
+      response.writeHead(400, headers);
       response.end();
     }
-  } else {
-    response.end();
+
   }
 
 };

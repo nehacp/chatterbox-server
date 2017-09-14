@@ -73,7 +73,144 @@ describe('server', function() {
     });
   });
 
-  
+  it('should handle query for reversed order', function(done) {
+    var requestParams1 = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'First',
+        text: 'Im old!'}
+    };
+
+    var requestParams2 = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Second',
+        text: 'Im new!'}
+    };
+
+    request(requestParams1, function(error, response, body) {
+      expect(response.statusCode).to.equal(201);
+    });
+
+    request(requestParams2, function(error, response, body) {
+      expect(response.statusCode).to.equal(201);
+      request('http://127.0.0.1:3000/classes/messages?order=-createdAt', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        expect(messages[0].username).to.equal('Second');
+        expect(messages[0].text).to.equal('Im new!');
+        done();
+      });
+    });
+  });
+
+  //NOTE For this test to pass you MUST RESTART the server every time you run it.
+  it('should handle DELETE request', function(done) {
+    var requestParams1 = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Third',
+        text: 'Im third!'}
+    };
+
+    var requestParams2 = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Fourth',
+        text: 'Im fourth!'}
+    };
+
+    request(requestParams1, function(error, response, body) {
+      expect(response.statusCode).to.equal(201);
+    });
+
+    request(requestParams2, function(error, response, body) {
+      expect(response.statusCode).to.equal(201);
+
+    });
+
+    const deleteParam = {method: 'DELETE',
+      uri: 'http://127.0.0.1:3000/classes/messages?objectId=6',
+    };
+
+    request(deleteParam, function(error, response, body) {
+      expect(response.statusCode).to.equal(201);
+      console.log('response is', response);
+      const deletedMessage = JSON.parse(body).body[0];
+      console.log('parsed body is', deletedMessage);
+      expect(deletedMessage.text).to.equal('Im fourth!');
+      expect(deletedMessage.username).to.equal('Fourth');
+    });
+
+    request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+      var messages = JSON.parse(body).results;
+      expect(messages[messages.length - 1].username).to.equal('Third');
+      done();
+    });
+
+
+  });
+
+
 
 
 });
+
+
+
+
+//
+// it('Should delete specific messages', function() {
+//   const firstMsg = {
+//     username: 'First',
+//     text: 'I am old!'
+//   };
+//   const secondMsg = {
+//     username: 'Second',
+//     text: 'I am new!'
+//   };
+//   let req = new stubs.request('/classes/messages', 'POST', firstMsg);
+//   let res = new stubs.response();
+//   handler.requestHandler(req, res);
+//
+//   req = new stubs.request('/classes/messages', 'POST', secondMsg);
+//   res = new stubs.response();
+//   handler.requestHandler(req, res);
+//
+//   const deleteBad = new stubs.request('/classes/messages?id=5', 'DELETE');
+//   const resBad = new stubs.response();
+//
+//   handler.requestHandler(deleteBad, resBad);
+//
+//   waitForThen(
+//     function() { return resBad._ended; },
+//     function() {
+//       expect(resBad._responseCode).to.equal(400); //
+//     });
+//
+//   const deleteBad2 = new stubs.request('/classes/messages', 'DELETE');
+//   const resBad2 = new stubs.response();
+//
+//   handler.requestHandler(deleteBad2, resBad2);
+//
+//   waitForThen(
+//     function() { return resBad2._ended; },
+//     function() {
+//       expect(resBad2._responseCode).to.equal(400); //
+//     });
+//
+//
+//   const toDelete = new stubs.request('/classes/messages?id=2', 'DELETE');
+//   res = new stubs.response();
+//
+//   handler.requestHandler(toDelete, res);
+//
+//   const getRequest = new stubs.request('/classes/messages?order=-createdAt', 'GET');
+//   res = new stubs.response();
+//
+//   handler.requestHandler(getRequest, res);
+//
+//   const messages = JSON.parse(res._data).results;
+//
+//   expect(messages.length).to.equal(1);
+//   expect(messages[0].username).to.equal('First');
+// });
