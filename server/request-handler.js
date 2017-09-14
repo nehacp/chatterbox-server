@@ -38,8 +38,16 @@ var requestHandler = function(request, response) {
   }
 
   if (method === 'GET' || method === "OPTIONS") {
+    const queryArray = url.match(/\?(.+)=(.+)/);
     response.writeHead(statusCode, headers);
-    const responseBody = { headers, method, url, results };
+    let responseBody;
+    if (queryArray && queryArray[1] === 'order' && queryArray[2] === '-createdAt') {
+      const reverseResults = results.slice().reverse();
+      responseBody = { headers, method, url };
+      responseBody.results = reverseResults;
+    } else {
+      responseBody = { headers, method, url, results };
+    }
     response.end(JSON.stringify(responseBody));
   } else if (method === 'POST') {
     let body = [];
