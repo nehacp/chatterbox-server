@@ -22,26 +22,34 @@ var defaultCorsHeaders = {
 
 const results = require('./messages');
 const urlMethods = require('url');
+const fs = require("fs");
+
 
 var requestHandler = function(request, response) {
+
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  // let statusCode = 200;
 
   const { method, url } = request; //Get request info
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = 'application/json';
 
-  if (!url.startsWith("/classes/messages")) {
+  const queryArray = urlMethods.parse(url, true);
+  const path = queryArray.pathname;
+
+  if (path === '/' || path.match(/\.(?=css$|js$|gif$)/g) !== null) {
+    let base = '../client';
+    base += path === '/' ? '/index.html' : path;
+    fs.readFile(base, function (err, data) {
+      if (err) {
+        return console.error(err);
+      }
+      response.end(data.toString());
+    });
+  } else if (!url.startsWith("/classes/messages")) {
     console.log('WRONG URL', url);
-    // statusCode = 404;
     response.writeHead(404, headers);
     response.end();
-  }
-
-  const queryArray = urlMethods.parse(url, true);
-
-  if (method === 'GET' || method === "OPTIONS") {
-    // const queryArray = url.match(/\?(.+)=(.+)/);
+  } else if (method === 'GET' || method === "OPTIONS") {
     response.writeHead(200, headers);
     let responseBody;
     if (queryArray.query['order'] && queryArray.query['order'] === '-createdAt') {
@@ -70,7 +78,6 @@ var requestHandler = function(request, response) {
       resultObj.createdAt = new Date();
       resultObj.objectId = results.length ? results[results.length - 1].objectId + 1 : 1;
       results.push(resultObj);
-      // statusCode = 201;
       response.writeHead(201, headers);
       const responseBody = { method, url };
       responseBody.body = resultObj;
