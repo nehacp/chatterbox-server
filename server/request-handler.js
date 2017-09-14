@@ -57,7 +57,7 @@ var requestHandler = function(request, response) {
     request.on('end', () => {
       const resultObj = JSON.parse(body.toString());
       resultObj.createdAt = new Date();
-      resultObj.objectId = results.length;
+      resultObj.objectId = results.length + 1;
       results.push(resultObj);
       statusCode = 201;
       response.writeHead(statusCode, headers);
