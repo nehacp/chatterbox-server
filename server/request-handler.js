@@ -72,7 +72,21 @@ var requestHandler = function(request, response) {
       const responseBody = { headers, method, url, body };
       response.end(JSON.stringify(responseBody));
     });
-
+  } else if (method === 'DELETE') { //NOTE: To delete, pass in object id url?objectId=[num]
+    const queryArray = url.match(/\?(.+)=(.+)/);
+    if (queryArray && queryArray[1] === 'objectId' && queryArray[2] <= results.length) {
+      console.log('before delete', results);
+      const deleted = results.splice(queryArray[2] - 1, 1);
+      response.writeHead(200, headers);
+      const responseBody = { headers, method, url };
+      responseBody.body = deleted;
+      console.log('after delete', results);
+      response.end(JSON.stringify(responseBody));
+    } else {
+      statusCode = 400;
+      response.writeHead(statusCode, headers);
+      response.end();
+    }
   } else {
     response.end();
   }

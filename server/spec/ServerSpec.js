@@ -57,31 +57,31 @@ describe('Node Server Request Listener Function', function() {
   });
 
   it('Should accept posts to /classes/room', function() {
-    var stubMsg = {
+    const stubMsg = {
       username: 'Jono',
       text: 'Do my bidding!'
     };
-    var req = new stubs.request('/classes/messages', 'POST', stubMsg);
-    var res = new stubs.response();
+    const req = new stubs.request('/classes/messages', 'POST', stubMsg);
+    const res = new stubs.response();
 
     handler.requestHandler(req, res);
 
     // Expect 201 Created response status
     expect(res._responseCode).to.equal(201);
 
-    // Testing for a newline isn't a valid test
-    // TODO: Replace with with a valid test
-    // expect(res._data).to.equal(JSON.stringify('\n'));
+    const parsed = JSON.parse(res._data);
+    const body = JSON.parse(parsed.body[0]);
+    expect(body.text).to.equal('Do my bidding!');
     expect(res._ended).to.equal(true);
   });
 
   it('Should respond with messages that were previously posted', function() {
-    var stubMsg = {
+    const stubMsg = {
       username: 'Jono',
       text: 'Do my bidding!'
     };
-    var req = new stubs.request('/classes/messages', 'POST', stubMsg);
-    var res = new stubs.response();
+    let req = new stubs.request('/classes/messages', 'POST', stubMsg);
+    let res = new stubs.response();
 
     handler.requestHandler(req, res);
 
@@ -96,15 +96,15 @@ describe('Node Server Request Listener Function', function() {
     expect(res._responseCode).to.equal(200);
     var messages = JSON.parse(res._data).results;
     expect(messages.length).to.be.above(0);
-    expect(messages[0].username).to.equal('Jono');
+    expect(messages[0].username).to.equal('Jono'); // TODO: ADD TO LIVE INTEGRATION SPEC
     expect(messages[0].text).to.equal('Do my bidding!');
     expect(res._ended).to.equal(true);
   });
 
 
   it('Should 404 when asked for a nonexistent file', function() {
-    var req = new stubs.request('/arglebargle', 'GET');
-    var res = new stubs.response();
+    const req = new stubs.request('/arglebargle', 'GET');
+    const res = new stubs.response();
 
     handler.requestHandler(req, res);
 
@@ -116,4 +116,87 @@ describe('Node Server Request Listener Function', function() {
       });
   });
 
+  // it('Should handle query for reversed order', function() {
+  //   const firstMsg = {
+  //     username: 'First',
+  //     text: 'I am old!'
+  //   };
+  //   const secondMsg = {
+  //     username: 'Second',
+  //     text: 'I am new!'
+  //   };
+  //   let req = new stubs.request('/classes/messages', 'POST', firstMsg);
+  //   let res = new stubs.response();
+  //   handler.requestHandler(req, res);
+  //
+  //   req = new stubs.request('/classes/messages', 'POST', secondMsg);
+  //   res = new stubs.response();
+  //   handler.requestHandler(req, res);
+  //
+  //   const getRequest = new stubs.request('/classes/messages?order=-createdAt', 'GET');
+  //   res = new stubs.response();
+  //
+  //   handler.requestHandler(getRequest, res);
+  //
+  //   const messages = JSON.parse(res._data).results;
+  //
+  //   expect(messages[0].username).to.equal('Second');
+  //   expect(messages[0].text).to.equal('I am new!');
+  // });
+  //
+  // it('Should delete specific messages', function() {
+  //   const firstMsg = {
+  //     username: 'First',
+  //     text: 'I am old!'
+  //   };
+  //   const secondMsg = {
+  //     username: 'Second',
+  //     text: 'I am new!'
+  //   };
+  //   let req = new stubs.request('/classes/messages', 'POST', firstMsg);
+  //   let res = new stubs.response();
+  //   handler.requestHandler(req, res);
+  //
+  //   req = new stubs.request('/classes/messages', 'POST', secondMsg);
+  //   res = new stubs.response();
+  //   handler.requestHandler(req, res);
+  //
+  //   const deleteBad = new stubs.request('/classes/messages?id=5', 'DELETE');
+  //   const resBad = new stubs.response();
+  //
+  //   handler.requestHandler(deleteBad, resBad);
+  //
+  //   waitForThen(
+  //     function() { return resBad._ended; },
+  //     function() {
+  //       expect(resBad._responseCode).to.equal(400); //
+  //     });
+  //
+  //   const deleteBad2 = new stubs.request('/classes/messages', 'DELETE');
+  //   const resBad2 = new stubs.response();
+  //
+  //   handler.requestHandler(deleteBad2, resBad2);
+  //
+  //   waitForThen(
+  //     function() { return resBad2._ended; },
+  //     function() {
+  //       expect(resBad2._responseCode).to.equal(400); //
+  //     });
+  //
+  //
+  //   const toDelete = new stubs.request('/classes/messages?id=2', 'DELETE');
+  //   res = new stubs.response();
+  //
+  //   handler.requestHandler(toDelete, res);
+  //
+  //   const getRequest = new stubs.request('/classes/messages?order=-createdAt', 'GET');
+  //   res = new stubs.response();
+  //
+  //   handler.requestHandler(getRequest, res);
+  //
+  //   const messages = JSON.parse(res._data).results;
+  //
+  //   expect(messages.length).to.equal(1);
+  //   expect(messages[0].username).to.equal('First');
+  // });
 });
